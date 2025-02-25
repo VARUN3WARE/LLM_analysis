@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LLM Models Analysis Dashboard</title>
     <link rel="icon" type="image/png" href="https://miro.medium.com/v2/resize:fit:720/format:webp/1*TWMZGU1PlPLtem0ytaU5fA.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+
     <style>
         :root {
             --primary: #6366f1;
@@ -101,6 +104,15 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             margin-bottom: 1rem;
         }
+        .data-card, .insight-card {
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .data-card:hover, .insight-card:hover {
+            transform: scale(1.05);  /* Slight pop-up effect */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
         
         .data-card h3 {
             color: var(--primary);
@@ -487,4 +499,11 @@
         <p>LLM Performance Analysis Dashboard | Created with pandas, matplotlib, seaborn, and TextBlob</p>
     </footer>
 </body>
+<script>
+    AOS.init({
+      duration: 800, // Animation speed
+      once: false,    // Repeats animation on scroll
+    });
+  </script>
+  
 </html>
