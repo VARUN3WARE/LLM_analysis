@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Models Analysis Dashboard</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #f59e0b;
+            --dark: #1e293b;
+            --light: #f1f5f9;
+            --gray: #64748b;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f3f4f6;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .section h2 {
+            color: var(--primary-dark);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-light);
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .chart-container {
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+        
+        .chart-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .data-card {
+            background-color: var(--light);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1rem;
+        }
+        
+        .data-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+        
+        .insight-card {
+            background-color: white;
+            border-left: 4px solid var(--primary);
+            padding:
+            1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .insight-card h3 {
+            color: var(--primary-dark);
+            margin-bottom: 0.75rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+        
+        table th {
+            background-color: var(--primary-light);
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        
+        table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tag-primary {
+            background-color: var(--primary-light);
+            color: white;
+        }
+        
+        .tag-secondary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .highlight-text {
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+        
+        .model-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .model-card {
+            flex: 1;
+            min-width: 200px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .model-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .model-card h3::before {
+            content: "";
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            margin-right: 0.5rem;
+        }
+        
+        .model-card p {
+            color: var(--gray);
+            margin-top: 0.5rem;
+        }
+        
+        .model-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .stat-value {
+            font-weight: 600;
+        }
+        
+        footer {
+            background-color: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .wordcloud-container {
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .wordcloud-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .caption {
+            margin-top: 0.75rem;
+            font-style: italic;
+            color: var(--gray);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>LLM Models Performance Analysis</h1>
+        <p>Comprehensive comparison of open-source language models on Groq's platform</p>
+    </header>
+    
+    <main>
+        <section class="section" id="why">
+            <h2>Why We Analyzed This Data</h2>
+            <p>With the rapidly evolving landscape of language models, understanding their performance characteristics is crucial for:</p>
+            <div class="grid-2">
+                <div class="data-card">
+                    <h3>Practical Implementation</h3>
+                    <p>Selecting the right model for specific use cases based on response quality, speed, and resource usage.</p>
+                </div>
+                <div class="data-card">
+                    <h3>Cost Efficiency</h3>
+                    <p>Balancing token usage and processing time to optimize for both performance and cost.</p>
+                </div>
+                <div class="data-card">
+                    <h3>Response Characteristics</h3>
+                    <p>Understanding how temperature settings affect output length, creativity, and sentiment.</p>
+                </div>
+                <div class="data-card">
+                    <h3>Comparative Analysis</h3>
+                    <p>Identifying strengths and weaknesses across different model architectures and sizes.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section class="section" id="how-collected">
+            <h2>How We Collected The Data</h2>
+            <p>We implemented a systematic approach to gather comparative data across multiple models:</p>
+            
+            <div class="insight-card">
+                <h3>Methodology</h3>
+                <p>Using the LangChain framework with Groq's API, we queried 5 different open-source models with 4 diverse prompts at 2 temperature settings each.</p>
+            </div>
+            
+            <div class="model-info">
+                <div class="model-card">
+                    <h3>Models Evaluated</h3>
+                    <div class="model-stat">
+                        <span>Llama-3.3-70b</span>
+                    </div>
+                    <div class="model-stat">
+                        <span>Gemma2-9b-it</span>
+                    </div>
+                    <div class="model-stat">
+                        <span>Llama-3.1-8b</span>
+                    </div>
+                    <div class="model-stat">
+                        <span>Mixtral-8x7b</span>
+                    </div>
+                    <div class="model-stat">
+                        <span>Qwen-2.5-32b</span>
+                    </div>
+                </div>
+                
+                <div class="model-card">
+                    <h3>Test Prompts</h3>
+                    <div class="model-stat">
+                        <span>Deep learning explanation</span>
+                    </div>
+                    <div class="model-stat">
+                        <span>What is love?</span>
+                    </div>
+                    <div class="model-stat">
+                        <span>Earning as a 15-year-old</span>
+                    </div>
+                    <div class="model-stat">
+                        <span>AI for climate change</span>
+                    </div>
+                </div>
+                
+                <div class="model-card">
+                    <h3>Temperature Settings</h3>
+                    <div class="model-stat">
+                        <span>Temperature = 0</span>
+                        <span class="stat-value">Deterministic</span>
+                    </div>
+                    <div class="model-stat">
+                        <span>Temperature = 1</span>
+                        <span class="stat-value">Creative</span>
+                    </div>
+                    <p>Each model was tested with both settings to evaluate how temperature affects output.</p>
+                </div>
+            </div>
+        </section>
+<!--         
+        <section class="section" id="data-prep">
+            <h2>How We Prepared the Data for Analysis</h2>
+            
+            <div class="insight-card">
+                <h3>Data Enrichment</h3>
+                <p>We enhanced the raw API response data with additional metrics for deeper analysis:</p>
+            </div>
+            
+            <div class="grid-2">
+                <div class="data-card">
+                    <h3>Content Length</h3>
+                    <p>Calculated the character length of each response to measure verbosity across models.</p>
+                </div>
+                <div class="data-card">
+                    <h3>Sentiment Analysis</h3>
+                    <p>Applied TextBlob to determine sentiment polarity of responses on a scale from -1 (negative) to 1 (positive).</p>
+                </div>
+                <div class="data-card">
+                    <h3>Statistical Aggregations</h3>
+                    <p>Performed grouping operations to calculate mean, standard deviation, and sum of key metrics by model and temperature.</p>
+                </div>
+                <div class="data-card">
+                    <h3>Text Visualization</h3>
+                    <p>Generated word clouds to visualize common themes and vocabulary across model outputs.</p>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <img src="/api/placeholder/800/400" alt="Data Preparation Pipeline" class="chart-img">
+                <p class="caption">Fig 1. Data Preparation Workflow from Raw API Responses to Enriched Dataset</p>
+            </div>
+        </section> -->
+        
+        <section class="section" id="dataset">
+            <h2>What's Inside the Dataset</h2>
+            
+            <div class="grid-2">
+                <div class="data-card">
+                    <h3>Basic Metrics</h3>
+                    <ul>
+                        <li><span class="highlight-text">Model name</span>: The LLM used for generation</li>
+                        <li><span class="highlight-text">Temperature</span>: 0 or 1 setting used</li>
+                        <li><span class="highlight-text">Prompt</span>: The input text provided</li>
+                        <li><span class="highlight-text">Content</span>: The model's generated response</li>
+                    </ul>
+                </div>
+                <div class="data-card">
+                    <h3>Performance Metrics</h3>
+                    <ul>
+                        <li><span class="highlight-text">Completion tokens</span>: Number of tokens in response</li>
+                        <li><span class="highlight-text">Completion time</span>: Time taken to generate response</li>
+                        <li><span class="highlight-text">Prompt time</span>: Time to process input</li>
+                        <li><span class="highlight-text">Queue time</span>: Wait time before processing</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="insight-card">
+                <h3>Derived Metrics</h3>
+                <p>We calculated additional metrics to enrich our analysis:</p>
+                <ul>
+                    <li><span class="highlight-text">Content length</span>: Character count of responses</li>
+                    <li><span class="highlight-text">Content sentiment</span>: Positivity/negativity score of responses</li>
+                </ul>
+            </div>
+            
+            <!-- <div class="chart-container">
+                <img src="/api/placeholder/800/400" alt="Dataset Structure Visualization" class="chart-img">
+                <p class="caption">Fig 2. Dataset Structure with Key Metrics and Their Relationships</p>
+            </div> -->
+        </section>
+        
+        <section class="section" id="insights">
+            <h2>Key Insights</h2>
+            
+            <div class="insight-card">
+                <h3>Token Usage Comparison</h3>
+                <p>Different models generate varying amounts of tokens even for the same prompts, impacting both cost and thoroughness.</p>
+                <div class="chart-container">
+                    <img src="images/completion_token.png" alt="Completion Tokens by Model" class="chart-img">
+                    <p class="caption">Fig 3. Distribution of Completion Tokens by Model</p>
+                </div>
+            </div>
+            
+            <div class="insight-card">
+                <h3>Response Time Analysis</h3>
+                <p>Completion time varies significantly between models, with larger models typically taking longer but not always proportionally.</p>
+                <div class="chart-container">
+                    <img src="images/avg_completion.png" alt="Completion Time by Model" class="chart-img">
+                    <p class="caption">Fig 4. Average Completion Time by Model</p>
+                </div>
+            </div>
+            
+            <div class="grid-2">
+                <div class="insight-card">
+                    <h3>Temperature Impact</h3>
+                    <p>Higher temperature settings (1) generally result in:</p>
+                    <ul>
+                        <li>More varied token counts</li>
+                        <li>Slightly longer completion times</li>
+                        <li>More diverse vocabulary</li>
+                    </ul>
+                    <div class="chart-container">
+                        <img src="images/token_temp.png" alt="Completion Tokens by Temperature" class="chart-img">
+                        <p class="caption">Fig 5. Completion Tokens by Temperature Setting</p>
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <h3>Content Length Analysis</h3>
+                    <p>Models demonstrate different verbosity levels, with larger models typically generating longer responses.</p>
+                    <div class="chart-container">
+                        <img src="images/content_length.png" alt="Content Length by Model" class="chart-img">
+                        <p class="caption">Fig 6. Average Content Length by Model</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="insight-card">
+                <h3>Sentiment Distribution</h3>
+                <p>Most responses trend toward positive sentiment, with variations between models and prompt types.</p>
+                <div class="chart-container">
+                    <img src="images/sentimental_dis.png" alt="Sentiment Distribution" class="chart-img">
+                    <p class="caption">Fig 7. Sentiment Distribution of Generated Content</p>
+                </div>
+            </div>
+            
+            <div class="wordcloud-container">
+                <h3>Common Themes in Responses</h3>
+                <p>Word frequency visualization across all model outputs:</p>
+                <img src="images/wordcloud.png" alt="Word Cloud of Generated Content" class="wordcloud-img">
+                <p class="caption">Fig 8. Word Cloud Visualization of Common Terms in Model Responses</p>
+            </div>
+            
+            <div class="insight-card">
+                <h3>Model Selection Recommendations</h3>
+                <p>Based on our analysis, we recommend:</p>
+                <ul>
+                    <li><span class="highlight-text">For speed-critical applications:</span> Consider smaller models like Llama-3.1-8b or Gemma2-9b which offer faster response times</li>
+                    <li><span class="highlight-text">For detailed responses:</span> Larger models like Llama-3.3-70b provide more comprehensive answers</li>
+                    <li><span class="highlight-text">For cost efficiency:</span> Mixtral-8x7b offers a good balance of quality and token usage</li>
+                    <li><span class="highlight-text">For creativity:</span> Using temperature=1 settings increases response diversity</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <p>LLM Performance Analysis Dashboard | Created with pandas, matplotlib, seaborn, and TextBlob</p>
+    </footer>
+</body>
+</html>
